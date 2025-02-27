@@ -1,12 +1,15 @@
 import { Router } from "express";
 import usersRouter from "./usersRoutes.js";
-import sessionsRouter from "./sessionsRoutes.js"; 
+import sessionsRouter from "./sessionsRoutes.js";
 import cartsRouter from "./cartsRoutes.js";
 
-const indexRouter = Router()
+const indexRouter = Router();
 
-indexRouter.use("/users", usersRouter)
-indexRouter.use("/sessions", sessionsRouter)
-indexRouter.use("/carts", cartsRouter)
+indexRouter.use("/api/users", usersRouter);
+indexRouter.use("/api/sessions", sessionsRouter);
+indexRouter.use("/api/carts", cartsRouter);
+indexRouter.use("*", (req, res) =>
+  res.status(404).send("Pagina no encontrada")
+);
 
-export default indexRouter
+export default indexRouter;
