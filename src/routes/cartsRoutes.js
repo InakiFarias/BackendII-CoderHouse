@@ -1,16 +1,13 @@
-import { Router } from "express";
-import {
-  getCart,
-  insertProductCart,
-  deleteProductCart,
-  deleteCart,
-} from "../controllers/cartsControllers.js";
+import { Router } from "express"
+import { getCart, insertProductCart, deleteProductCart, deleteCart } from "../controllers/cartsControllers.js"
+import passport from "passport"
+import { authorization } from "../config/middlewares.js"
 
-const cartsRouter = Router();
+const cartsRouter = Router()
 
-cartsRouter.get("/:cid", getCart);
-cartsRouter.post("/:cid/products/:pid", insertProductCart);
-cartsRouter.delete("/:cid/products/:pid", deleteProductCart);
-cartsRouter.delete("/:cid", deleteCart);
+cartsRouter.get("/:cid", passport.authenticate("jwt"), authorization("User"), getCart)
+cartsRouter.post("/:cid/products/:pid", passport.authenticate("jwt"), authorization("User"), insertProductCart)
+cartsRouter.delete("/:cid/products/:pid", passport.authenticate("jwt"), authorization("User"), deleteProductCart)
+cartsRouter.delete("/:cid", passport.authenticate("jwt"), authorization("User"), deleteCart)
 
-export default cartsRouter;
+export default cartsRouter
