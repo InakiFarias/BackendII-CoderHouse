@@ -1,4 +1,4 @@
-import { hashSync, compareSync } from "bcrypt";
+import { hashSync, compareSync } from "bcrypt"
 
 export const createHash = (password) => hashSync(password, 5);
 

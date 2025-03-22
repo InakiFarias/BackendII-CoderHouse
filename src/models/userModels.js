@@ -1,5 +1,5 @@
-import { model, Schema } from "mongoose";
-import cartModel from "./cartModels.js";
+import { model, Schema } from "mongoose"
+import cartModel from "./cartModels.js"
 
 const userSchema = new Schema({
   first_name: {
@@ -31,19 +31,19 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "carts",
   },
-});
+})
 
 userSchema.post("save", async function (doc) {
   try {
     if (!doc.cart) {
-      const newCart = await cartModel.create({ products: [] });
-      await model("users").findByIdAndUpdate(doc._id, { cart: newCart._id });
+      const newCart = await cartModel.create({ products: [] })
+      await model("users").findByIdAndUpdate(doc._id, { cart: newCart._id })
     }
   } catch (err) {
-    console.log(err);
+    console.log(err)
   }
 });
 
-const userModel = model("users", userSchema);
+const userModel = model("users", userSchema)
 
-export default userModel;
+export default userModel

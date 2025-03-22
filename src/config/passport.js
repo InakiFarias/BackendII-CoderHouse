@@ -1,21 +1,21 @@
-import passport from "passport";
-import local from "passport-local";
-import GithubStrategy from "passport-github";
-import jwt from "passport-jwt";
-import userModel from "../models/userModels.js";
-import { createHash, validatePassword } from "../utils/bCrypt.js";
+import passport from "passport"
+import local from "passport-local"
+import GithubStrategy from "passport-github"
+import jwt from "passport-jwt"
+import userModel from "../models/userModels.js"
+import { createHash, validatePassword } from "../utils/bCrypt.js"
 
-const localStrategy = local.Strategy;
-const JWTStrategy = jwt.Strategy;
-const ExcratctJWT = jwt.ExtractJwt;
+const localStrategy = local.Strategy
+const JWTStrategy = jwt.Strategy
+const ExcratctJWT = jwt.ExtractJwt
 
 const cookieExcractor = (req) => {
-  let token = null;
+  let token = null
   if (req.cookies) {
-    token = req.cookies["coderSession"];
+    token = req.cookies["coderSession"]
   }
-  return token;
-};
+  return token
+}
 
 const inicializatePassport = () => {
   passport.use(
@@ -24,7 +24,7 @@ const inicializatePassport = () => {
       { passReqToCallback: true, usernameField: "email" },
       async (req, username, password, done) => {
         try {
-          const { first_name, last_name, email, password, age } = req.body;
+          const { first_name, last_name, email, password, age } = req.body
           if (
             first_name === undefined ||
             last_name === undefined ||
@@ -32,21 +32,21 @@ const inicializatePassport = () => {
             password === undefined ||
             age === undefined
           )
-            return done(null, false);
+            return done(null, false)
           const user = await userModel.create({
             first_name,
             last_name,
             email,
             password: createHash(password),
             age,
-          });
-          return done(null, user);
+          })
+          return done(null, user)
         } catch (err) {
-          return done(err);
+          return done(err)
         }
       }
     )
-  );
+  )
 
   passport.use(
     "login",
@@ -54,18 +54,18 @@ const inicializatePassport = () => {
       { usernameField: "email" },
       async (username, password, done) => {
         try {
-          const user = await userModel.findOne({ email: username });
+          const user = await userModel.findOne({ email: username })
           if (user && validatePassword(password, user.password)) {
-            done(null, user);
+            done(null, user)
           } else {
-            return done(null, false);
+            return done(null, false)
           }
         } catch (err) {
-          return done(err);
+          return done(err)
         }
       }
     )
-  );
+  )
 
   passport.use(
     "github",
@@ -77,7 +77,7 @@ const inicializatePassport = () => {
       },
       async (accesToken, refreshToken, profile, done) => {
         try {
-          const user = await userModel.findOne({ email: profile._json.email });
+          const user = await userModel.findOne({ email: profile._json.email })
           if (!user) {
             const newUser = await userModel.create({
               first_name: profile._json.name,
@@ -85,17 +85,17 @@ const inicializatePassport = () => {
               email: profile._json.email,
               password: createHash("coder"),
               age: 18,
-            });
-            done(null, newUser);
+            })
+            done(null, newUser)
           } else {
-            done(null, user);
+            done(null, user)
           }
         } catch (e) {
-          done(e);
+          done(e)
         }
       }
     )
-  );
+  )
 
   passport.use(
     "jwt",
@@ -106,22 +106,22 @@ const inicializatePassport = () => {
       },
       (jwt_payload, done) => {
         try {
-          return done(null, jwt_payload);
+          return done(null, jwt_payload)
         } catch (e) {
-          return done(e);
+          return done(e)
         }
       }
     )
-  );
+  )
 
   passport.serializeUser((user, done) => {
-    done(null, user?._id);
-  });
+    done(null, user?._id)
+  })
 
   passport.deserializeUser(async (id, done) => {
-    const user = await userModel.findById(id);
-    done(null, user);
-  });
-};
+    const user = await userModel.findById(id)
+    done(null, user)
+  })
+}
 
-export default inicializatePassport;
+export default inicializatePassport

@@ -1,6 +1,6 @@
-import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken"
 
-const sectretKey = "coder";
+const sectretKey = "coder"
 
 const generateToken = (user) => {
   const token = jwt.sign(
@@ -14,8 +14,8 @@ const generateToken = (user) => {
     },
     sectretKey,
     { expiresIn: "24h" }
-  );
+  )
   return token;
-};
+}
 
 export default generateToken;
