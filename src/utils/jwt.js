@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken"
 
-const sectretKey = "coder"
-
 const generateToken = (user) => {
   const token = jwt.sign(
     {
@@ -12,7 +10,7 @@ const generateToken = (user) => {
       age: user.age,
       rol: user.rol,
     },
-    sectretKey,
+    process.env.SECRET_JWT,
     { expiresIn: "24h" }
   )
   return token;

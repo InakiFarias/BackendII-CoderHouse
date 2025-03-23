@@ -13,13 +13,13 @@ const app = express()
 const PORT = 8080
 
 app.use(express.json())
-app.use(cookieParser("coder"))
+app.use(cookieParser(process.env.SECRET_COOKIE))
 app.use(session({
     store: MongoStore.create({
-      mongoUrl: process.env.DB_CONNECTION,
+      mongoUrl: process.env.MONGO_URL,
       ttl: 86400,
     }),
-    secret: "coder",
+    secret: process.env.SECRET_SESSION,
     resave: true,
     saveUninitialized: true,
   })
@@ -27,10 +27,9 @@ app.use(session({
 
 app.use("", indexRouter)
 
-mongoose
-  .connect(process.env.DB_CONNECTION)
-  .then(() => console.log("DB is connected"))
-  .catch((err) => console.error("Error connecting to DB:", err))
+mongoose.connect(process.env.MONGO_URL)
+.then(() => console.log("DB is connected"))
+.catch((err) => console.error("Error connecting to DB:", err))
 
 inicializatePassport()
 app.use(passport.initialize())
