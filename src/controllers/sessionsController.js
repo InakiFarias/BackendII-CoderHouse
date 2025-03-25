@@ -2,7 +2,6 @@ import generateToken from "../utils/jwt.js"
 
 export const register = async (req, res) => {
   try {
-    console.log(req.user)
     if (!req.user)
       return res.status(400).send("Deben cargarse todos los campos")
     res.status(201).json({ message: "Usuario Creado Correctamente" })
@@ -23,7 +22,7 @@ export const login = async (req, res) => {
     res.status(200).cookie("coderSession", generateToken(req.user), {
         httpOnly: true,
         secure: false,
-        magAxe: 86400000,
+        maxAge: 86400000,
       })
       .json({ message: "Usuario Logueado correctamente"})
   } catch (err) {

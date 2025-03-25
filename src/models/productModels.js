@@ -16,7 +16,7 @@ const productSchema = new Schema({
     required: true,
   },
   status: {
-    type: String,
+    type: Boolean,
     default: true,
   },
   price: {

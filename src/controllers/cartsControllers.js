@@ -1,3 +1,4 @@
+import crypto from "crypto"
 import cartModel from "../models/cartModels.js"
 import productModel from "../models/productModels.js"
 import ticketModel from "../models/ticketModels.js"
@@ -5,7 +6,8 @@ import ticketModel from "../models/ticketModels.js"
 export const getCart = async (req, res) => {
   try {
     const cartId = req.params.cid
-    const cart = await cartModel.findOne({ _id: cartId })
+    const cart = await cartModel.findById(cartId)
+    
     if (cart) res.status(200).send(cart)
     else res.status(404).send("Carrito no encontrado")
   } catch (e) {
@@ -17,8 +19,9 @@ export const insertProductCart = async (req, res) => {
   try {
     const cartId = req.params.cid
     const prodId = req.params.pid
-    const quantity = req.body
+    const quantity = req.body.quantity
     const cart = await cartModel.findOne({ _id: cartId })
+
     if (cart) {
       const product = await productModel.findById(prodId)
       if (product) {
@@ -47,11 +50,12 @@ export const deleteProductCart = async (req, res) => {
     const cartId = req.params.cid
     const prodId = req.params.pid
     const cart = await cartModel.findOne({ _id: cartId })
+
     if (cart) {
-      const indice = cart.products.findIndex((prod) => prod.id_prod === prodId)
+      const indice = cart.products.findIndex((prod) => prod._id == prodId)
       if (indice != -1) {
         cart.products.splice(indice, 1)
-        cart.save()
+        await cart.save()
         res.status(200).send(cart)
       } else {
         res.status(404).send("Producto no existente en el carrito")
@@ -66,9 +70,10 @@ export const deleteCart = async (req, res) => {
   try {
     const cartId = req.params.cid
     const cart = await cartModel.findOne({ _id: cartId })
+
     if (cart) {
       cart.products = []
-      cart.save()
+      await cart.save()
       res.status(200).send(cart)
     } else res.status(404).send("Carrito no encontrado")
   } catch (e) {
@@ -80,49 +85,52 @@ export const checkout =  async (req, res) => {
   try {
     const cartId = req.params.cid
     const cart = await cartModel.findById(cartId)
+    if (!cart) return res.status(404).json({ message: "Carrito no existe" })
+
     const prodStockNull = []
-    if(cart) {
+
+    for(const prod of cart.products) {
+      const product = await productModel.findById(prod.id_prod)
+      if(product) {
+        if(product.stock < prod.quantity) {
+          prodStockNull.push(product._id)
+        }
+      }
+    }
+
+    if(prodStockNull.length === 0) {
+      let totalAmount = 0
+
       for(const prod of cart.products) {
         const product = await productModel.findById(prod.id_prod)
         if(product) {
-        if(product.stock < prod.quantity) {
-          prodStockNull.push(product.id)
-        }
-        }
-        
-        if(prodStockNull.length === 0) {
-          let totalAmount = 0
-
-          for(const prod of cart.products) {
-            const product = await productModel.findById(prod.id_prod)
-            if(product) {
-              product.stock -= prod.quantity
-              totalAmount += product.price * prod.quantity
-              await product.save()
-            }
-          }
-
-          const newTicket = await ticketModel.create({
-            code: crypto.randomUUID(),
-            purchaser: req.user.email,
-            amount: totalAmount,
-            products: cart.products
-          })
-
-          await cartModel.findByIdAndUpdate(cartId, { products: [] })
-
-          res.status(200).json({ message: "Compra finalizada correctamente" })
-        } else {
-          prodStockNull.forEach( async (prodId) => {
-            const index = cart.products.findIndex(prod => prod.id_prod === prodId)
-            cart.products.splice(index, 1)
-            await cartModel.findByIdAndUpdate(cartId, { products: cart.products })
-          })
-          res.status(400).json({ message: "Productos sin stock" })
+          product.stock -= prod.quantity
+          await product.save()
+          totalAmount += product.price * prod.quantity
         }
       }
+
+      const newTicket = await ticketModel.create({
+        code: crypto.randomUUID(),
+        purchaser: req.user.email,
+        amount: totalAmount,
+        products: cart.products
+      })
+
+      cart.products = []
+      await cart.save()
+
+      res.status(200).json({ message: "Compra finalizada correctamente", ticket: newTicket})
     } else {
-      res.status(404).json({ message: "Carrito no existe"})
+      for(const prodId of prodStockNull) {
+        const index = cart.products.findIndex((prod) => prod.id_prod === prodId)
+        if(index !== -1) {
+          cart.products.splice(index, 1)
+        }
+      }
+
+      await cart.save()
+      res.status(400).json({ message: "Productos sin stock", productosEliminados: prodStockNull });
     }
   } catch (e) {
     res.status(500).send(e)

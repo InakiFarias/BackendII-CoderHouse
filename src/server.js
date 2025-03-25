@@ -44,6 +44,6 @@ app.use(express.static(path.join(__dirname, "public")))
 
 app.use("", indexRouter)
 
-app.listen(PORT, (req, res) => {
+app.listen(PORT, () => {
   console.log("Server ON 8080")
 })
