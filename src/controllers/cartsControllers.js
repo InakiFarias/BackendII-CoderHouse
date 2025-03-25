@@ -97,7 +97,7 @@ export const checkout =  async (req, res) => {
             const product = await productModel.findById(prod.id_prod)
             if(product) {
               product.stock -= prod.quantity
-              totalAmount += prod.price * prod.quantity
+              totalAmount += product.price * prod.quantity
               await product.save()
             }
           }

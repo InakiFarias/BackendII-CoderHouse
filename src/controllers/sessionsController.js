@@ -5,7 +5,7 @@ export const register = async (req, res) => {
     console.log(req.user)
     if (!req.user)
       return res.status(400).send("Deben cargarse todos los campos")
-    res.status(201).send(`Usuario registrado correctamente: ${req.user._id}`)
+    res.status(201).json({ message: "Usuario Creado Correctamente" })
   } catch (err) {
     console.log(err)
     res.status(500).send(err)
@@ -20,14 +20,12 @@ export const login = async (req, res) => {
       email: req.user.email,
       first_name: req.user.first_name,
     }
-    res
-      .status(200)
-      .cookie("coderSession", generateToken(req.user), {
+    res.status(200).cookie("coderSession", generateToken(req.user), {
         httpOnly: true,
         secure: false,
         magAxe: 86400000,
       })
-      .send("Usuario logueado correctamente")
+      .json({ message: "Usuario Logueado correctamente"})
   } catch (err) {
     res.status(500).send(err)
   }
@@ -50,4 +48,20 @@ export const githubLogin = (req, res) => {
   } catch (err) {
     res.status(500).send(err)
   }
+}
+
+export const viewRegister = (req, res) => {
+  res.status(200).render('templates/register', {
+      title: "Registro de Usuario",
+      url_js: "/js/register.js",
+      url_css: "/css/main.css"
+  })
+}
+
+export const viewLogin = (req,res) => {
+  res.status(200).render('templates/login', {
+      title: "Inicio de Sesion de Usuario",
+      url_js: "/js/login.js",
+      url_css: "/css/main.css"
+  })
 }
